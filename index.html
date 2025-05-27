@@ -283,21 +283,47 @@
 
         // 提交到Netlify Functions的函数
         async function submitToNotion(data) {
-            const response = await fetch('/.netlify/functions/submit-to-notion', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
+            console.log('前端：准备提交数据', data);
             
-            const result = await response.json();
-            
-            if (!response.ok) {
-                throw new Error(result.error || `HTTP ${response.status}: ${response.statusText}`);
+            try {
+                const response = await fetch('/.netlify/functions/submit-to-notion', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                console.log('前端：收到响应状态', response.status);
+                console.log('前端：响应头', [...response.headers.entries()]);
+                
+                // 检查响应是否为空
+                const responseText = await response.text();
+                console.log('前端：原始响应文本', responseText);
+                
+                if (!responseText) {
+                    throw new Error('服务器返回空响应');
+                }
+                
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('前端：JSON解析失败', parseError);
+                    throw new Error(`服务器响应格式错误: ${responseText.substring(0, 100)}`);
+                }
+                
+                if (!response.ok) {
+                    throw new Error(result.error || `HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                console.log('前端：成功解析响应', result);
+                return result;
+                
+            } catch (fetchError) {
+                console.error('前端：网络请求失败', fetchError);
+                throw new Error(`网络请求失败: ${fetchError.message}`);
             }
-            
-            return result;
         }
 
         // 显示已提交的数据（用于测试）
