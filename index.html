@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>预支金额提交</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .title {
+            text-align: center;
+            color: #333;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .amount-input {
+            position: relative;
+        }
+
+        .currency-symbol {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #667eea;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .amount-input input {
+            padding-left: 40px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .status-message.show {
+            opacity: 1;
+        }
+
+        .status-message.success {
+            background: #d1f2eb;
+            color: #0e6655;
+        }
+
+        .status-message.error {
+            background: #fadbd8;
+            color: #a93226;
+        }
+
+        .config-info {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .config-info h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .config-info p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .config-info code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">预支金额申请</h1>
+        
+        <form id="advanceForm">
+            <div class="form-group">
+                <label for="applicantName">预支人 *</label>
+                <input type="text" id="applicantName" name="applicantName" required>
+            </div>
+
+            <div class="form-group">
+                <label for="amount">预支金额 *</label>
+                <div class="amount-input">
+                    <span class="currency-symbol">¥</span>
+                    <input type="number" id="amount" name="amount" step="0.01" min="0" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="date">时间 *</label>
+                <input type="date" id="date" name="date" required>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">
+                提交申请
+            </button>
+        </form>
+
+        <div class="status-message" id="statusMessage"></div>
+
+        <div class="config-info">
+            <h3>🔧 Notion集成配置说明</h3>
+            <p>要将数据提交到Notion，你需要：</p>
+            <p>1. 在Notion中创建一个数据库，包含以下字段：</p>
+            <p>• <code>预支人</code> (标题)</p>
+            <p>• <code>预支金额</code> (数字)</p>
+            <p>• <code>时间</code> (日期)</p>
+            <p>• <code>申请时间</code> (创建时间)</p>
+            <p>2. 创建Notion集成并获取API密钥</p>
+            <p>3. 将数据库ID和API密钥配置到代码中</p>
+        </div>
+    </div>
+
+    <script>
+        // 模拟数据存储（实际应用中会发送到Notion API）
+        let submissions = JSON.parse(localStorage.getItem('submissions') || '[]');
+
+        document.getElementById('advanceForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const statusMessage = document.getElementById('statusMessage');
+            
+            // 禁用提交按钮
+            submitBtn.disabled = true;
+            submitBtn.textContent = '提交中...';
+            
+            // 获取表单数据
+            const formData = new FormData(e.target);
+            const data = {
+                applicantName: formData.get('applicantName'),
+                amount: parseFloat(formData.get('amount')),
+                date: formData.get('date'),
+                submitTime: new Date().toISOString()
+            };
+            
+            try {
+                // 模拟API调用延迟
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // 实际提交到Notion（通过Netlify Functions）
+                await submitToNotion(data);
+                
+                // 不再保存到本地存储，因为已经提交到Notion
+                
+                // 显示成功消息
+                statusMessage.className = 'status-message success show';
+                statusMessage.textContent = '✅ 申请提交成功！数据已保存到Notion数据库。';
+                
+                // 重置表单
+                e.target.reset();
+                
+            } catch (error) {
+                // 显示错误消息
+                statusMessage.className = 'status-message error show';
+                statusMessage.textContent = '❌ 提交失败，请重试。错误：' + error.message;
+            } finally {
+                // 恢复提交按钮
+                submitBtn.disabled = false;
+                submitBtn.textContent = '提交申请';
+                
+                // 3秒后隐藏状态消息
+                setTimeout(() => {
+                    statusMessage.className = 'status-message';
+                }, 3000);
+            }
+        });
+
+        // 设置默认日期为今天
+        document.getElementById('date').value = new Date().toISOString().split('T')[0];
+
+        // 提交到Netlify Functions的函数
+        async function submitToNotion(data) {
+            const response = await fetch('/.netlify/functions/submit-to-notion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(result.error || `HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            return result;
+        }
+
+        // 显示已提交的数据（用于测试）
+        console.log('已提交的申请：', submissions);
+    </script>
+</body>
+</html>
