@@ -77,7 +77,8 @@ exports.handler = async (event, context) => {
     console.log('环境变量检查:', {
       hasApiKey: !!NOTION_API_KEY,
       hasDbId: !!DATABASE_ID,
-      apiKeyPrefix: NOTION_API_KEY ? NOTION_API_KEY.substring(0, 10) + '...' : 'undefined'
+      apiKeyPrefix: NOTION_API_KEY ? NOTION_API_KEY.substring(0, 10) + '...' : 'undefined',
+      apiKeyFormat: NOTION_API_KEY ? (NOTION_API_KEY.startsWith('ntn_') ? 'New format (ntn_)' : 'Legacy format (secret_)') : 'undefined'
     });
     
     if (!NOTION_API_KEY || !DATABASE_ID) {
